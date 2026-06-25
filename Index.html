@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accedi - MyBank</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            background: #f0f2f5; 
+        }
+        .login-card { 
+            background: white; 
+            padding: 2.5rem 1.5rem; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            width: 90%;
+            max-width: 350px; 
+            text-align: center; 
+            box-sizing: border-box;
+        }
+        h2 { margin-top: 0; color: #333; margin-bottom: 20px; }
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 8px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+        }
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 16px;
+            margin-top: 12px;
+            transition: 0.3s;
+            border: none;
+        }
+        .btn-login { background: #007bff; color: white; }
+        .btn-login:active { background: #0056b3; }
+        
+        /* Nuovi stili per il pulsante Registrati */
+        .btn-signup { 
+            background: transparent; 
+            color: #007bff; 
+            border: 2px solid #007bff; 
+            margin-top: 10px;
+        }
+        .btn-signup:active { background: rgba(0, 123, 255, 0.1); }
+
+        .forgot-btn { 
+            color: #666; 
+            cursor: pointer; 
+            font-size: 14px; 
+            margin-top: 20px; 
+            display: block; 
+            text-decoration: underline; 
+        }
+        #loader { 
+            display: none; 
+            margin-top: 20px; 
+            color: #007bff; 
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Accedi</h2>
+        <input type="text" id="username" placeholder="Nome utente">
+        <input type="password" id="password" placeholder="Password">
+        
+        <button class="btn-login" onclick="handleLogin()">Accedi</button>
+        <button class="btn-signup" id="signupBtn" onclick="handleSignUp()">Registrati</button>
+        
+        <span class="forgot-btn" onclick="alert('Servizio al momento non disponibile')">Password dimenticata?</span>
+        <div id="loader">Elaborazione in corso...</div>
+    </div>
+
+    <script>
+        const loader = document.getElementById('loader');
+
+        function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if (user === 'hyun67' && pass === 'hyun1590#') {
+                loader.innerText = "Verifica delle credenziali...";
+                loader.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 4000);
+            } else {
+                alert('Nome utente o Password non validi');
+            }
+        }
+
+        // Nuova funzione di registrazione
+        function handleSignUp() {
+            loader.innerText = "Verifica disponibilità...";
+            loader.style.display = 'block';
+            
+            setTimeout(() => {
+                loader.style.display = 'none';
+                alert('La registrazione non è al momento disponibile nel tuo paese');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
+
