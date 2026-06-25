@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vantage Peak - Impostazioni</title>
+    <style>
+        :root { --primary: #0f172a; --accent: #fbbf24; --bg: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 90px; background: var(--bg); }
+        .header { background: var(--primary); color: white; padding: 25px; text-align: center; border-radius: 0 0 20px 20px; }
+        .section { padding: 20px; }
+        .set-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .set-header { padding: 15px 20px; background: #f8fafc; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; }
+        .set-item { display: flex; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid #f1f5f9; align-items: center; }
+        .set-item:last-child { border: none; }
+        .set-info b { display: block; font-size: 0.9rem; margin-bottom: 2px; }
+        .set-info span { font-size: 0.8rem; color: #64748b; }
+        .btn-edit { color: var(--primary); font-weight: bold; font-size: 0.8rem; background: none; border: none; padding: 5px 10px; cursor: pointer; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #e2e8f0; z-index: 100; }
+        .nav-item { text-align: center; color: #94a3b8; font-size: 0.75rem; cursor: pointer; border: none; background: none; }
+        .nav-item.active { color: var(--primary); font-weight: bold; }
+        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+        .overlay { display: none; position: fixed; inset: 0; background: white; z-index: 1000; justify-content: center; align-items: center; flex-direction: column; font-weight: bold; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="loader" class="overlay"><div class="spinner"></div>Sincronizzazione in corso...</div>
+    <div class="header">
+        <div style="color: var(--accent); font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase;">Vantage Peak</div>
+        <div style="font-weight: bold; font-size: 1.1rem; margin-top: 5px;">Impostazioni</div>
+    </div>
+
+    <div class="section">
+        <div class="set-card">
+            <div class="set-header">Informazioni Personali</div>
+            <div class="set-item"><div class="set-info"><b>Nome Completo</b><span>hyun Jéssica</span></div><button class="btn-edit" onclick="deny()">Modifica</button></div>
+            <div class="set-item"><div class="set-info"><b>Email</b><span>h.jessica@vantageclient.com</span></div><button class="btn-edit" onclick="deny()">Aggiorna</button></div>
+        </div>
+
+        <div class="set-card">
+            <div class="set-header">Sicurezza</div>
+            <div class="set-item"><div class="set-info"><b>Password</b><span>Modificata 14 giorni fa</span></div><button class="btn-edit" onclick="deny()">Cambia</button></div>
+            <div class="set-item"><div class="set-info"><b>Verifica in 2 passaggi</b><span>Attiva (SMS)</span></div><button class="btn-edit" onclick="deny()">Gestisci</button></div>
+        </div>
+
+        <div class="set-card">
+            <div class="set-header">Limiti di Transazione</div>
+            <div class="set-item"><div class="set-info"><b>Trasferimento Giornaliero</b><span>$500,000.00</span></div><button class="btn-edit" onclick="deny()">Aumenta</button></div>
+            <div class="set-item"><div class="set-info"><b>Valuta Visualizzata</b><span>USD ($)</span></div><button class="btn-edit" onclick="deny()">Cambia</button></div>
+        </div>
+        
+        <button style="width:100%; padding:18px; background:var(--primary); color:white; border:none; border-radius:14px; font-weight:bold; font-size:1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="deny()">Salva tutte le preferenze</button>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="goTo('dashboard.html')"><span class="nav-icon">🏠</span>Home</button>
+        <button class="nav-item" onclick="goTo('transfer.html')"><span class="nav-icon">💸</span>Invia</button>
+        <button class="nav-item active" onclick="goTo('settings.html')"><span class="nav-icon">⚙️</span>Impostazioni</button>
+        <button class="nav-item" onclick="location.href='index.html'" style="color:#ef4444;"><span class="nav-icon">⏻</span>Esci</button>
+    </nav>
+
+    <script>
+        function goTo(u){ document.getElementById('loader').style.display='flex'; setTimeout(()=>{window.location.href=u},4000); }
+        function deny(){
+            const l = document.getElementById('loader'); l.style.display='flex';
+            setTimeout(()=>{ l.style.display='none'; alert("Servizio non disponibile: Si prega di contattare il proprio account manager dedicato per autorizzare queste modifiche."); }, 3000);
+        }
+    </script>
+</body>
+</html>
+
