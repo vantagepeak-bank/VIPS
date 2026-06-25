@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vantage Peak - Trasferimenti</title>
+    <style>
+        :root { --primary: #0f172a; --accent: #fbbf24; --bg: #f8fafc; --success: #22c55e; }
+        body { font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 90px; background: var(--bg); color: #1e293b; }
+        .header { background: var(--primary); color: white; padding: 25px; text-align: center; border-radius: 0 0 20px 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .content { padding: 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { padding: 10px 20px; background: white; border-radius: 20px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; cursor: pointer; border: 1px solid transparent; transition: all 0.3s ease; }
+        .tab.active { background: var(--primary); color: white; }
+        .transfer-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px; color: #64748b; text-transform: uppercase; }
+        input, select { width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 1rem; }
+        
+        /* Sezione Utenze e Bollette */
+        .bill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .bill-item { background: white; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #e2e8f0; cursor: pointer; transition: transform 0.2s; }
+        .bill-item:active { transform: scale(0.95); }
+        .bill-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+        .bill-name { font-weight: bold; font-size: 0.9rem; display: block; }
+        .bill-desc { font-size: 0.7rem; color: #64748b; margin-top: 5px; }
+
+        .error-field { border: 2px solid #ef4444 !important; background: #fff1f2 !important; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 25px; backdrop-filter: blur(5px); }
+        .modal { background: white; padding: 30px; border-radius: 24px; text-align: center; width: 100%; max-width: 400px; }
+        .tax-info { background: #fefce8; border: 1px solid #fef08a; padding: 15px; border-radius: 12px; margin: 15px 0; font-size: 0.9rem; }
+        .contact-notice { font-size: 0.8rem; color: #64748b; margin-top: 10px; line-height: 1.4; }
+        
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        .btn-outline { background: transparent; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; width: 100%; margin-top: 10px; cursor: pointer; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #e2e8f0; z-index: 100; }
+        .nav-item { text-align: center; color: #94a3b8; text-decoration: none; font-size: 0.75rem; cursor: pointer; border: none; background: none; }
+        .nav-item.active { color: var(--primary); font-weight: bold; }
+        .converter-result { margin-top: 10px; padding: 12px; background: #f1f5f9; border-radius: 8px; font-size: 0.85rem; font-weight: 700; color: var(--primary); display: flex; justify-content: space-between; border-left: 4px solid var(--accent); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Avviso Tassa Internazionale -->
+    <div id="tax-overlay" class="overlay">
+        <div class="modal">
+            <h3 style="margin-top:0;">Avviso Imposta Internazionale</h3>
+            <p style="font-size: 0.85rem; color: #64748b;">I protocolli standard per i bonifici internazionali richiedono il pagamento di una tassa obbligatoria.</p>
+            <div class="tax-info">
+                <strong>Aliquota Fiscale: 5.8%</strong><br>
+                Imposta Stimata: <span id="tax-amount">$290.00</span>
+            </div>
+            <div class="contact-notice">
+                Si prega di contattare la banca per l'approvazione:<br>
+                <a href="tel:+13682070226" style="font-weight: bold; color: var(--primary); text-decoration: none;">+1 (368) 207-0226</a>
+            </div>
+            <button class="btn-primary" style="margin-top: 20px;" onclick="confirmTransfer()">Conferma e Invia</button>
+            <button class="btn-outline" onclick="closeTaxModal()">Annulla</button>
+        </div>
+    </div>
+
+    <!-- Schermata di caricamento verifica sicurezza -->
+    <div id="loading-overlay" class="overlay"><div class="modal"><p>Verifica dei protocolli di sicurezza in corso...</p></div></div>
+
+    <div class="header">
+        <div style="color: var(--accent); font-size: 0.7rem; letter-spacing: 2px;">VANTAGE PEAK</div>
+        <div style="font-weight: bold; font-size: 1.1rem; margin-top: 5px;">Centro Pagamenti</div>
+    </div>
+
+    <div class="content">
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('local')">Nazionale (USA)</div>
+            <div class="tab" onclick="showTab('international')">Internazionale</div>
+            <div class="tab" onclick="showTab('bills')">Pagamento Bollette</div>
+        </div>
+
+        <!-- Sezione Nazionale -->
+        <div id="local-section" class="transfer-card">
+            <div class="form-group"><label>Nome Completo del Beneficiario</label><input type="text" id="l-name" class="v-field" placeholder="Inserisci il nome completo"></div>
+            <div class="form-group">
+                <label>Seleziona Banca</label>
+                <select id="l-bank-select">
+                    <option>JPMorgan Chase</option>
+                    <option>Bank of America</option>
+                    <option>Wells Fargo</option>
+                    <option>Citibank</option>
+                    <option>U.S. Bank</option>
+                    <option>PNC Bank</option>
+                    <option>Truist Bank</option>
+                    <option>Goldman Sachs</option>
+                    <option>Capital One</option>
+                    <option>TD Bank</option>
+                    <option>Fifth Third Bank</option>
+                    <option>Morgan Stanley</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Numero di Conto</label><input type="text" id="l-acc" class="v-field"></div>
+            <div class="form-group"><label>Importo ($)</label><input type="number" id="l-amt" class="v-field"></div>
+            <button class="btn-primary" onclick="validateLocal()">Invia Denaro</button>
+        </div>
+
+        <!-- Sezione Internazionale -->
+        <div id="international-section" class="transfer-card hidden">
+            <div class="form-group"><label>Nome Completo del Beneficiario</label><input type="text" id="i-name" class="v-field" placeholder="Nome legale"></div>
+            <div class="form-group"><label>Nome della Banca Beneficiaria</label><input type="text" id="i-bank-name" class="v-field" placeholder="es. HSBC, Deutsche Bank"></div>
+            <div class="form-group"><label>IBAN / Numero di Conto</label><input type="text" id="i-iban" class="v-field"></div>
+            <div style="display:flex; gap:10px;">
+                <div class="form-group" style="flex:2;"><label>Importo (USD)</label><input type="number" id="i-amt" class="v-field" oninput="updateLiveConv()"></div>
+                <div class="form-group" style="flex:1.5;">
+                    <label>Valuta</label>
+                    <select id="i-curr" onchange="updateLiveConv()">
+                        <option value="EUR">EUR (Euro)</option>
+                        <option value="BRL">BRL (Real)</option>
+                        <option value="GBP">GBP (Sterlina)</option>
+                        <option value="TWD">TWD (Taiwan)</option>
+                        <option value="AUD">AUD (Australiano)</option>
+                        <option value="CAD">CAD (Canadese)</option>
+                        <option value="HKD">HKD (Hong Kong)</option>
+                        <option value="TRY">TRY (Lira Turca)</option>
+                        <option value="SGD">SGD (Singapore)</option>
+                        <option value="CLP">CLP (Cile)</option>
+                        <option value="JPY">JPY (Yen)</option>
+                        <option value="PLN">PLN (Zloty)</option>
+                        <option value="RON">RON (Leu)</option>
+                        <option value="ZAR">ZAR (Rand)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="converter-result"><span>Il destinatario riceve:</span><span id="conv-val">0.00 EUR</span></div>
+            <button class="btn-primary" style="margin-top:20px;" onclick="validateInternational()">Avvia Bonifico Globale</button>
+        </div>
+
+        <!-- Sezione Bollette / Servizi Rapidi -->
+        <div id="bills-section" class="hidden">
+            <h4 style="margin: 0 0 15px 5px; color: var(--primary);">Pagamento Rapido</h4>
+            <div class="bill-grid">
+                <div class="bill-item" onclick="alert('Servizio utenze selezionato')">
+                    <span class="bill-icon">⚡</span>
+                    <span class="bill-name">Utenze</span>
+                    <span class="bill-desc">Acqua, Gas, Luce</span>
+                </div>
+                <div class="bill-item" onclick="alert('Servizio Internet selezionato')">
+                    <span class="bill-icon">🌐</span>
+                    <span class="bill-name">Internet</span>
+                    <span class="bill-desc">Fibra & WiFi</span>
+                </div>
+                <div class="bill-item" onclick="alert('Servizio Mobile selezionato')">
+                    <span class="bill-icon">📱</span>
+                    <span class="bill-name">Mobile</span>
+                    <span class="bill-desc">Piani Mensili</span>
+                </div>
+                <div class="bill-item" onclick="alert('Servizio Assicurazione selezionato')">
+                    <span class="bill-icon">🛡️</span>
+                    <span class="bill-name">Assicurazione</span>
+                    <span class="bill-desc">Salute & Auto</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigazione inferiore -->
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="goTo('dashboard.html')">🏠 Home</button>
+        <button class="nav-item active" onclick="goTo('transfer.html')">💸 Invia</button>
+        <button class="nav-item" onclick="goTo('settings.html')">⚙️ Impostazioni</button>
+        <button class="nav-item" onclick="location.href='index.html'" style="color:#ef4444;">⏻ Esci</button>
+    </nav>
+
+    <script>
+        function goTo(page) { window.location.href = page; }
+
+        function showTab(type) {
+            document.querySelectorAll('.transfer-card, #bills-section').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            const section = type === 'bills' ? document.getElementById('bills-section') : document.getElementById(type + '-section');
+            section.classList.remove('hidden');
+            if(event) event.currentTarget.classList.add('active');
+        }
+
+        function updateLiveConv() {
+            const usd = document.getElementById('i-amt').value;
+            const curr = document.getElementById('i-curr').value;
+            const rates = { 
+                "EUR": 0.92, "GBP": 0.79, "TWD": 31.74, "AUD": 1.51, "ZAR": 16.56,
+                "CAD": 1.35, "RON": 0.23, "HKD": 7.82, "CLP": 899.58, "TRY": 44.58, "SGD": 1.34, "JPY": 151.2, "PLN": 3.98, "BRL": 5.12 
+            };
+            if(usd > 0) {
+                const res = (usd * rates[curr]).toLocaleString(undefined, {minimumFractionDigits: 2});
+                document.getElementById('conv-val').innerText = `${res} ${curr}`;
+            } else {
+                document.getElementById('conv-val').innerText = `0.00 ${curr}`;
+            }
+        }
+
+        function validateInternational() {
+            let isValid = true;
+            document.querySelectorAll('#international-section .v-field').forEach(i => {
+                if(!i.value.trim()) { i.classList.add('error-field'); isValid = false; }
+                else { i.classList.remove('error-field'); }
+            });
+            
+            if(!isValid) return;
+
+            const amountField = document.getElementById('i-amt');
+            const enteredAmount = parseFloat(amountField.value);
+
+            // Vincolo importo minimo di 5.000 USD per l'estero
+            if (isNaN(enteredAmount) || enteredAmount < 5000) {
+                amountField.classList.add('error-field');
+                alert("I bonifici internazionali devono avere un importo minimo di $5,000.00.");
+                return;
+            }
+
+            const tax = (enteredAmount * 0.058).toFixed(2);
+            document.getElementById('tax-amount').innerText = `$${tax}`;
+            document.getElementById('tax-overlay').style.display = 'flex';
+        }
+
+        function closeTaxModal() { document.getElementById('tax-overlay').style.display = 'none'; }
+
+        function confirmTransfer() {
+            closeTaxModal();
+            document.getElementById('loading-overlay').style.display = 'flex';
+            setTimeout(() => {
+                alert("Trasferimento in attesa. Contatta il servizio clienti per lo sblocco al numero +1 (368) 222-3728.");
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, 3000);
+        }
+
+        function validateLocal() {
+            let isValid = true;
+            document.querySelectorAll('#local-section .v-field').forEach(i => {
+                if(!i.value.trim()) { i.classList.add('error-field'); isValid = false; }
+                else { i.classList.remove('error-field'); }
+            });
+            if(isValid) { confirmTransfer(); }
+        }
+    </script>
+</body>
+                                                                           </html>
+
